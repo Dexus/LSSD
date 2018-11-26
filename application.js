@@ -788,6 +788,7 @@ function vehicleDriveAdd(params) {
 
 function vehicle_image_reload() {
     $(".vehicle_image_reload").each(function() {
+        if ("false" == $(this).attr("image_replace_allowed")) return !0;
         if ("undefined" != typeof $(this).attr("vehicle_graphic_id") && "" != $(this).attr("vehicle_graphic_id")) {
             var e = $(this).attr("vehicle_graphic_id");
             "undefined" != typeof vehicle_graphics_sorted[e] && "undefined" != typeof vehicle_graphics_sorted[e][$(this).attr("vehicle_type_id")] && null != vehicle_graphics_sorted[e][$(this).attr("vehicle_type_id")] && $(this).attr("src", vehicle_graphics_sorted[e][$(this).attr("vehicle_type_id")][0])
@@ -796,10 +797,11 @@ function vehicle_image_reload() {
 }
 
 function vehicleCreateOnMap(e, t) {
-    if ("undefined" != typeof buildingVehicleGraphicCache[t.b]) {
-        var i = buildingVehicleGraphicCache[t.b];
-        "undefined" != typeof vehicle_graphics_sorted[i] && "undefined" != typeof vehicle_graphics_sorted[i][t.vtid] && null != vehicle_graphics_sorted[i][t.vtid] && (t["in"] = vehicle_graphics_sorted[i][t.vtid][0], t.isr = vehicle_graphics_sorted[i][t.vtid][1], t.apng_sonderrechte = vehicle_graphics_sorted[i][t.vtid][2])
-    } else "undefined" != typeof vehicle_graphics[t.vtid] && null != vehicle_graphics[t.vtid] && (t["in"] = vehicle_graphics[t.vtid][0], t.isr = vehicle_graphics[t.vtid][1], t.apng_sonderrechte = vehicle_graphics[t.vtid][2]);
+    if ("true" == t.ioverwrite)
+        if ("undefined" != typeof buildingVehicleGraphicCache[t.b]) {
+            var i = buildingVehicleGraphicCache[t.b];
+            "undefined" != typeof vehicle_graphics_sorted[i] && "undefined" != typeof vehicle_graphics_sorted[i][t.vtid] && null != vehicle_graphics_sorted[i][t.vtid] && (t["in"] = vehicle_graphics_sorted[i][t.vtid][0], t.isr = vehicle_graphics_sorted[i][t.vtid][1], t.apng_sonderrechte = vehicle_graphics_sorted[i][t.vtid][2])
+        } else "undefined" != typeof vehicle_graphics[t.vtid] && null != vehicle_graphics[t.vtid] && (t["in"] = vehicle_graphics[t.vtid][0], t.isr = vehicle_graphics[t.vtid][1], t.apng_sonderrechte = vehicle_graphics[t.vtid][2]);
     if (null == e) {
         if ("undefined" != typeof mapkit) {
             var e = new mapkit.ImageAnnotation(new mapkit.Coordinate(0, 0), {
@@ -992,13 +994,17 @@ function rand(e, t) {
     return 0 === i && (e = 0, t = 32768), Math.floor(Math.random() * (t - e + 1)) + e
 }
 
+function missionSpeed(e) {
+    mission_speed = e, 6 == mission_speed ? $("#mission_speed_pause").show() : $("#mission_speed_pause").hide()
+}
+
 function missionRequest() {
     var e = 0;
     $.each(mission_markers, function(t, i) {
         1 == i.opacity && i.user_id == user_id && e++
     });
     var t = mission_count_max;
-    eventRunning && (t = 2 * t), "undefined" != typeof mission_count_max && t > e && $.ajax({
+    eventRunning && (t = 2 * t), 6 != mission_speed && "undefined" != typeof mission_count_max && t > e && $.ajax({
         url: "/mission-generate",
         cache: !1,
         error: function(e) {
@@ -1709,7 +1715,7 @@ function hideVehicleBuildingHelpText(e) {
                 ab_ruest: "Tech/Rescue-Module",
                 ab_ruest_rw: null,
                 abl2wasser_only: "Hose-Supply-Module",
-                ambulance: "Ambulance",
+                ambulance: "ALS ambulance",
                 arff: "ARFF (Airport Fire Truck)",
                 battalion_chief_unit: "Battalion Chief unit",
                 boot: "Boats (General)",
@@ -1754,7 +1760,7 @@ function hideVehicleBuildingHelpText(e) {
                 ktw_or_rtw: null,
                 lebefkw: "Leichter Befehlskraftwagen (leBefKw)",
                 lf_only: "Fire Trucks",
-                long_distance_ambulance: "\nAmbulances",
+                long_distance_ambulance: "BLS ambulance",
                 mask_service_unit: "Mobile Air Unit",
                 mek_mtf: null,
                 mek_zf: null,
